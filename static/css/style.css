@@ -1,0 +1,302 @@
+/* =========================================================
+   ReconMTK - Stylesheet Sederhana
+   Cuma pakai 6 warna inti + 2 font, supaya gampang dijelaskan
+   dan diubah (mis. kalau diminta ganti warna tombol saat sidang,
+   tinggal ubah satu baris --accent di bawah).
+   ========================================================= */
+:root {
+  --bg: #10151f;          /* warna latar utama */
+  --panel: #171d29;       /* warna kartu/panel */
+  --border: #2a3242;      /* warna garis pembatas */
+  --text: #e8ebf2;        /* warna teks utama */
+  --text-muted: #8890a0;  /* warna teks sekunder */
+  --accent: #3ecfc0;      /* warna aksen/tombol (gampang diganti) */
+
+  --font-ui: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+/* ---------- Layout dasar: sidebar kiri + konten kanan ---------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.main {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Brand / judul aplikasi ---------- */
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.brand-name { font-weight: 700; font-size: 16px; }
+.brand-sub { font-size: 11px; color: var(--text-muted); }
+
+/* ---------- Sidebar: form input ---------- */
+.sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.field-label { font-size: 12.5px; font-weight: 600; }
+.field-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.field-input:focus { outline: none; border-color: var(--accent); }
+.field-hint { font-size: 11px; color: var(--text-muted); margin: 0; }
+.field-error { font-size: 12px; color: #ff6b6b; min-height: 14px; }
+.field-check { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer; line-height: 1.4; }
+.field-check input { margin-top: 2px; }
+
+/* ---------- Tombol utama (mudah diganti warnanya lewat --accent) ---------- */
+.btn-primary {
+  background: var(--accent);
+  color: #062421;
+  border: none;
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* ---------- Daftar tahapan proses (checklist sederhana) ---------- */
+.step-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.step-list li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12.5px; color: var(--text-muted);
+  padding: 6px 0;
+}
+.step-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.step-list li.active { color: var(--text); font-weight: 600; }
+.step-list li.active .step-num { border-color: var(--accent); color: var(--accent); }
+.step-list li.done .step-num { background: var(--accent); border-color: var(--accent); color: #062421; }
+.step-list li.done { color: var(--text-muted); }
+.step-list li.error .step-num { border-color: #ff6b6b; color: #ff6b6b; }
+
+/* ---------- Sidebar footer ---------- */
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+.meta-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
+.meta-row strong { color: var(--text); }
+.ethics-note { font-size: 10.5px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+/* ---------- Header konten utama ---------- */
+.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.page-title { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+.page-subtitle { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+/* ---------- Kartu status ringkas (pengganti diagram topologi) ---------- */
+.status-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.status-item { display: flex; flex-direction: column; gap: 4px; }
+.status-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.status-value { font-family: var(--font-mono); font-size: 14px; font-weight: 600; }
+.badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.badge.alive { color: var(--accent); border-color: var(--accent); }
+.badge.dead { color: #ff6b6b; border-color: #ff6b6b; }
+.badge.running { color: #f5c542; border-color: #f5c542; }
+
+/* ---------- Grid konten: log + hasil ---------- */
+.content-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; flex: 1; }
+@media (max-width: 1000px) {
+  .content-grid { grid-template-columns: 1fr; }
+  .app-shell { grid-template-columns: 1fr; }
+  .status-card { grid-template-columns: repeat(2, 1fr); }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.stage-pill {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border);
+}
+.stage-pill.running { color: #f5c542; border-color: #f5c542; }
+.stage-pill.done { color: var(--accent); border-color: var(--accent); }
+.stage-pill.error { color: #ff6b6b; border-color: #ff6b6b; }
+
+/* ---------- Log terminal ---------- */
+.terminal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 440px;
+}
+.terminal-line { color: var(--text-muted); }
+.terminal-line .t-time { color: #555; margin-right: 6px; }
+
+/* ---------- Tabs ---------- */
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  background: none; border: none; color: var(--text-muted);
+  font-weight: 600; font-size: 12.5px;
+  padding: 8px 10px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active { color: var(--accent); border-color: var(--accent); }
+.tab-panel { display: none; flex: 1; overflow-y: auto; max-height: 400px; }
+.tab-panel.active { display: block; }
+
+/* ---------- Tabel port ---------- */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.data-table th {
+  text-align: left; font-size: 10.5px; text-transform: uppercase;
+  color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 8px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
+.status-chip { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.status-chip.open { color: var(--accent); background: rgba(62,207,192,0.1); }
+.status-chip.closed { color: var(--text-muted); background: rgba(136,144,160,0.1); }
+.status-chip.filtered { color: #d9a441; background: rgba(217,164,65,0.12); }
+.empty-row { color: var(--text-muted); text-align: center; padding: 24px; font-size: 12.5px; }
+
+/* ---------- Kartu enumerasi ---------- */
+.enum-list { display: flex; flex-direction: column; gap: 8px; }
+.enum-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.enum-card-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.enum-card-title { font-weight: 600; font-size: 13px; }
+.enum-card-port { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+.enum-card-banner {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+  background: var(--panel); border-radius: 6px; padding: 6px 8px;
+  overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 4px 0 0;
+}
+.enum-card-version { font-size: 11.5px; color: var(--accent); margin-top: 4px; }
+
+/* ---------- Kartu CVE ---------- */
+.cve-list { display: flex; flex-direction: column; gap: 10px; }
+.cve-card { background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.cve-card.sev-critical { border-left-color: #ff6b6b; }
+.cve-card.sev-high { border-left-color: #ff9f4a; }
+.cve-card.sev-medium { border-left-color: #f5c542; }
+.cve-card.sev-low { border-left-color: var(--accent); }
+.cve-card-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.cve-id { font-family: var(--font-mono); font-weight: 600; font-size: 12.5px; }
+.severity-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; }
+.severity-badge.critical { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+.severity-badge.high { background: rgba(255,159,74,0.15); color: #ff9f4a; }
+.severity-badge.medium { background: rgba(245,197,66,0.15); color: #f5c542; }
+.severity-badge.low { background: rgba(62,207,192,0.15); color: var(--accent); }
+.cve-title { font-weight: 600; font-size: 13px; margin: 0 0 4px; }
+.cve-type { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); margin: 0 0 6px; text-transform: uppercase; }
+.cve-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0 0 6px; }
+.cve-mitigation {
+  font-size: 11.5px; color: var(--text);
+  background: var(--panel); border-left: 2px solid var(--accent);
+  border-radius: 4px; padding: 6px 10px; margin: 0 0 6px;
+}
+.cve-mitigation strong { color: var(--accent); }
+.cve-reason { font-size: 11px; color: var(--text-muted); margin: 0 0 4px; }
+.cve-ref a { color: var(--accent); font-size: 11px; text-decoration: none; }
+.cve-ref a:hover { text-decoration: underline; }
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+
+/* ---------- Tab Basis Data CVE (ringkasan + hapus) ---------- */
+.db-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.db-stat {
+  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px; font-size: 10.5px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.db-stat strong { display: block; font-size: 17px; color: var(--text); font-family: var(--font-mono); letter-spacing: 0; }
+.db-stat.total strong { color: var(--accent); }
+.btn-danger {
+  background: none; border: 1px solid #ff6b6b; color: #ff6b6b;
+  border-radius: 6px; padding: 4px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+}
+.btn-danger:hover { background: rgba(255,107,107,0.12); }
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.db-msg-ok { color: var(--accent); }
+.db-msg-err { color: #ff6b6b; }

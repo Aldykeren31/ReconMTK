@@ -1,0 +1,18 @@
+# Byte-compiled / Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# Backup files
+*.bak
+
+# Generated scan reports
+reports/*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db

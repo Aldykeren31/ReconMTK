@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReconMTK &mdash; Automated Reconnaissance Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============================================================
+       SIDEBAR: judul aplikasi, form input target, dan daftar
+       tahapan proses (checklist sederhana, bukan animasi SVG).
+       ============================================================ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-name">ReconMTK</div>
+        <div class="brand-sub">Automated Reconnaissance Tool</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <label class="field-label" for="target-input">Target IP / CIDR</label>
+      <input id="target-input" class="field-input" type="text" placeholder="mis. 192.168.88.1" autocomplete="off">
+      <p class="field-hint">Masukkan IP Router MikroTik yang akan dipindai.</p>
+
+      <label class="field-label" for="profile-select">Profil Port</label>
+      <select id="profile-select" class="field-input">
+        <option value="core" selected>Core &mdash; 9 port fokus penelitian (BAB III)</option>
+        <option value="full">Full Scan &mdash; semua port TCP + UDP (BAB IV)</option>
+      </select>
+
+      <label class="field-check">
+        <input type="checkbox" id="ip-protocol-checkbox">
+        <span>Sertakan IP Protocol Scan (ICMP/GRE/OSPF, dst &mdash; butuh nmap + sudo)</span>
+      </label>
+      <p class="field-hint">Nomor protokol IP bukan port TCP/UDP, jadi dipindai terpisah lewat <code>nmap -sO</code>. Wajib jalankan <code>app.py</code> dengan <code>sudo</code> untuk opsi ini.</p>
+
+      <!-- Tombol utama untuk memulai proses scan -->
+      <button id="scan-btn" class="btn-primary">Mulai Reconnaissance</button>
+      <div id="scan-error" class="field-error"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Tahapan Proses</div>
+      <ol class="step-list" id="stepper">
+        <li data-stage="host"><span class="step-num">1</span> Host Discovery</li>
+        <li data-stage="footprint"><span class="step-num">2</span> Footprinting</li>
+        <li data-stage="enum"><span class="step-num">3</span> Enumeration</li>
+        <li data-stage="analysis"><span class="step-num">4</span> Pencocokan CVE</li>
+        <li data-stage="report"><span class="step-num">5</span> Laporan Otomatis</li>
+      </ol>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="meta-row"><span>Basis data CVE</span><strong id="cve-count">{{ cve_count }} entri</strong></div>
+      <div class="meta-row"><span>Metodologi</span><strong>PTES</strong></div>
+      <p class="ethics-note">Hanya untuk perangkat &amp; jaringan yang Anda miliki atau punya izin untuk diuji.</p>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       KONTEN UTAMA: status target, log proses, dan tab hasil.
+       ============================================================ -->
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1 class="page-title" id="page-title">Menunggu target dipindai</h1>
+        <p class="page-subtitle" id="page-subtitle">Masukkan target pada panel kiri untuk memulai.</p>
+      </div>
+      <a id="download-report" class="btn-secondary" href="#" style="display:none">Unduh Laporan PDF</a>
+    </header>
+
+    <!-- Kartu status ringkas: target, status aktif/tidak, jumlah port terbuka -->
+    <section class="status-card">
+      <div class="status-item">
+        <span class="status-label">Target</span>
+        <span class="status-value" id="status-target">&mdash;</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Status Host</span>
+        <span class="status-value" id="status-host">
+          <span class="badge" id="status-host-badge">Standby</span>
+        </span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Port Terbuka</span>
+        <span class="status-value" id="status-ports">&mdash;</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Versi RouterOS</span>
+        <span class="status-value" id="status-version">&mdash;</span>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <!-- Log proses berjalan -->
+      <section class="panel log-panel">
+        <div class="panel-header">
+          <span class="section-title">Log Proses</span>
+          <span class="stage-pill" id="stage-pill">Idle</span>
+        </div>
+        <div class="terminal" id="terminal">
+          <div class="terminal-line terminal-placeholder">Menunggu perintah scan&hellip;</div>
+        </div>
+      </section>
+
+      <!-- Hasil pemindaian, dibagi 3 tab -->
+      <section class="panel results-panel">
+        <div class="panel-header">
+          <span class="section-title">Hasil Pemindaian</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="ports">Port &amp; Layanan</button>
+          <button class="tab-btn" data-tab="enum">Enumerasi</button>
+          <button class="tab-btn" data-tab="cve">Kerentanan (CVE)</button>
+          <button class="tab-btn" data-tab="ipproto">IP Protocol</button>
+          <button class="tab-btn" data-tab="db">Basis Data CVE</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-ports">
+          <table class="data-table" id="ports-table">
+            <thead><tr><th>Port</th><th>Proto</th><th>Layanan</th><th>Status</th></tr></thead>
+            <tbody><tr><td colspan="4" class="empty-row">Belum ada data.</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="tab-panel" id="tab-enum">
+          <div id="enum-list" class="enum-list">
+            <p class="empty-row">Belum ada data.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-cve">
+          <div id="cve-list" class="cve-list">
+            <p class="empty-row">Belum ada data.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-ipproto">
+          <p id="ipproto-note" class="field-hint"></p>
+          <table class="data-table" id="ipproto-table">
+            <thead><tr><th>Nomor</th><th>Protokol</th><th>Status</th></tr></thead>
+            <tbody><tr><td colspan="3" class="empty-row">Belum dipindai. Centang "Sertakan IP Protocol Scan" di panel kiri sebelum mulai.</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- Tab kelola basis data CVE: ringkasan jumlah + daftar + hapus -->
+        <div class="tab-panel" id="tab-db">
+          <div class="db-summary" id="db-summary"></div>
+          <p class="field-hint" id="db-message">Penghapusan bersifat permanen. Salinan database sebelum dihapus disimpan di <code>data/cve_database.json.bak</code>.</p>
+          <table class="data-table" id="db-table">
+            <thead><tr><th>CVE ID</th><th>Judul</th><th>Severity</th><th>CVSS</th><th></th></tr></thead>
+            <tbody><tr><td colspan="5" class="empty-row">Memuat&hellip;</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

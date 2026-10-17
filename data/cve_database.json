@@ -1,0 +1,163 @@
+{
+  "_meta": {
+    "name": "MikroTik RouterOS CVE Reference Database",
+    "note": "Kurasi manual dari sumber publik (NVD, VulnCheck, MikroTik Security Advisories) untuk keperluan skripsi. Perbarui berkala dari https://mikrotik.com/supportsec dan https://nvd.nist.gov sebelum dipakai pada laporan resmi. Skema atribut mengikuti Tabel 3.2 Perancangan Basis Data (BAB III).",
+    "last_updated": "2026-10-08",
+    "schema": {
+      "cve_id": "String (PK) - Kode identifikasi resmi CVE",
+      "title": "String - Nama umum/singkat kerentanan",
+      "affected_component": "String - Komponen/layanan MikroTik yang terdampak",
+      "affected_ports": "Array[Integer] - Port terkait layanan yang rentan",
+      "version_type": "String - Basis pencocokan versi: 'routeros' atau 'openssh'",
+      "affected_version": "String - Rentang versi terdampak, format: '<= X', '>= X', 'X - Y', atau gabungan beberapa cabang dipisah ';' (mis. 'stable: 6.27 - 6.49.6; long-term: <= 6.49.7')",
+      "severity_level": "String - Tingkat keparahan: Low, Medium, High, Critical",
+      "vulnerability_type": "String - Kategori serangan (mis. Privilege Escalation, DoS, RCE, Brute Force)",
+      "cvss": "Float - Skor CVSS resmi (0.0 - 10.0)",
+      "description": "Text - Penjelasan singkat mekanisme celah keamanan",
+      "mitigation_hint": "Text - Rekomendasi tindakan pencegahan/pembaruan firmware",
+      "reference": "String (URL) - Tautan sumber referensi resmi"
+    }
+  },
+  "cves": [
+    {
+      "cve_id": "CVE-2023-30799",
+      "title": "FOISted – Privilege Escalation admin ke super-admin (RCE)",
+      "affected_component": "Winbox / WWW (HTTP) service",
+      "affected_ports": [
+        80,
+        443,
+        8291
+      ],
+      "version_type": "routeros",
+      "affected_version": "stable: 6.27 - 6.49.6; long-term: <= 6.49.7",
+      "severity_level": "Critical",
+      "vulnerability_type": "Privilege Escalation (RCE)",
+      "cvss": 9.1,
+      "description": "Memungkinkan penyerang yang telah terautentikasi (admin) meningkatkan hak akses menjadi super-admin melalui antarmuka Winbox atau HTTP, sehingga dapat mengeksekusi kode secara arbitrer pada perangkat.",
+      "mitigation_hint": "Upgrade ke RouterOS long-term >= 6.49.7 atau stable/testing >= 6.49.8. Batasi akses Winbox/WWW hanya dari IP tepercaya lewat firewall.",
+      "reference": "https://www.vulncheck.com/blog/mikrotik-foisted-revisited"
+    },
+    {
+      "cve_id": "CVE-2023-30800",
+      "title": "Heap Memory Corruption pada Web Server (JsProxy DoS)",
+      "affected_component": "WWW (HTTP) service",
+      "affected_ports": [
+        80
+      ],
+      "version_type": "routeros",
+      "affected_version": "v6: <= 6.49.9 (RouterOS v7 tidak terdampak)",
+      "severity_level": "High",
+      "vulnerability_type": "Denial of Service (Memory Corruption)",
+      "cvss": 7.5,
+      "description": "Web server pada RouterOS versi 6 rentan terhadap korupsi memori heap akibat permintaan HTTP yang dibuat khusus, menyebabkan antarmuka web crash dan restart.",
+      "mitigation_hint": "Upgrade RouterOS v6 ke >= 6.49.10, atau migrasi ke RouterOS v7.",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2023-30800"
+    },
+    {
+      "cve_id": "CVE-2023-32154",
+      "title": "RADVD Out-Of-Bounds Write (RCE)",
+      "affected_component": "IPv6 RADVD (Router Advertisement Daemon)",
+      "affected_ports": [],
+      "version_type": "routeros",
+      "affected_version": "v7: 7.0 - 7.99 (cek changelog resmi untuk versi pasti yang sudah diperbaiki)",
+      "severity_level": "Critical",
+      "vulnerability_type": "Remote Code Execution (Out-of-Bounds Write)",
+      "cvss": 9.8,
+      "description": "Kesalahan validasi data pada Router Advertisement Daemon memungkinkan penyerang yang berada di jaringan yang sama (network-adjacent) mengeksekusi kode secara arbitrer tanpa autentikasi.",
+      "mitigation_hint": "Perbarui ke versi RouterOS 7 terbaru. Nonaktifkan RADVD/IPv6 Router Advertisement bila tidak digunakan.",
+      "reference": "https://cve.akaoma.com/vendor/mikrotik"
+    },
+    {
+      "cve_id": "CVE-2024-54772",
+      "title": "Winbox Username Enumeration (Timing Side-Channel)",
+      "affected_component": "Winbox service",
+      "affected_ports": [
+        8291
+      ],
+      "version_type": "routeros",
+      "affected_version": "v6: 6.43 - 6.49.17; v7: 7.1 - 7.17.2",
+      "severity_level": "Medium",
+      "vulnerability_type": "Information Disclosure (Username Enumeration)",
+      "cvss": 5.3,
+      "description": "Perbedaan waktu respons dan ukuran payload antara percobaan login dengan username valid vs tidak valid memungkinkan penyerang melakukan enumerasi akun pengguna yang sah, mempermudah serangan brute-force lanjutan.",
+      "mitigation_hint": "Upgrade ke versi RouterOS terbaru yang sudah memperbaiki celah ini. Batasi akses Winbox hanya dari IP tepercaya dan aktifkan penguncian akun setelah beberapa kali percobaan gagal.",
+      "reference": "https://mikrotik.com/supportsec/cve-2024-54772"
+    },
+    {
+      "cve_id": "CVE-2024-6387",
+      "title": "regreSSHion – OpenSSH Race Condition RCE",
+      "affected_component": "SSH service (jika berbasis OpenSSH terdampak)",
+      "affected_ports": [
+        22
+      ],
+      "version_type": "openssh",
+      "affected_version": "OpenSSH: 8.5p1 - 9.7p1 (perlu verifikasi manual versi OpenSSH yang dipakai daemon SSH perangkat)",
+      "severity_level": "Critical",
+      "vulnerability_type": "Remote Code Execution (Race Condition)",
+      "cvss": 9.8,
+      "description": "Race condition pada signal handler OpenSSH server yang berpotensi menghasilkan eksekusi kode arbitrer dengan hak akses root.",
+      "mitigation_hint": "Perbarui OpenSSH ke >= 9.8p1, atau nonaktifkan layanan SSH bila tidak diperlukan.",
+      "reference": "https://www.qualys.com/2024/07/01/cve-2024-6387/regresshion.txt"
+    },
+    {
+      "cve_id": "CVE-2022-36522",
+      "title": "Netwatch Assertion Failure (DoS)",
+      "affected_component": "Advanced Tools - Netwatch",
+      "affected_ports": [],
+      "version_type": "routeros",
+      "affected_version": "stable: <= 6.48.3",
+      "severity_level": "Medium",
+      "vulnerability_type": "Denial of Service (Assertion Failure)",
+      "cvss": 6.5,
+      "description": "Assertion failure pada modul netwatch yang dapat memicu Denial of Service melalui paket yang dibuat khusus.",
+      "mitigation_hint": "Upgrade ke RouterOS >= 6.48.4.",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2022-36522"
+    },
+    {
+      "cve_id": "CVE-2020-20250",
+      "title": "LCDSTAT Memory Corruption (DoS)",
+      "affected_component": "nova/bin/lcdstat",
+      "affected_ports": [],
+      "version_type": "routeros",
+      "affected_version": "stable: <= 6.47",
+      "severity_level": "Medium",
+      "vulnerability_type": "Denial of Service (Memory Corruption)",
+      "cvss": 6.5,
+      "description": "Kerentanan memory corruption (NULL pointer dereference) pada proses lcdstat yang memungkinkan penyerang terautentikasi memicu Denial of Service.",
+      "mitigation_hint": "Upgrade ke RouterOS >= 6.47.1 dan batasi akses ke fitur LCD/console pada perangkat yang mendukungnya.",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2020-20250"
+    },
+    {
+      "cve_id": "CVE-2019-3924",
+      "title": "SOCKS Proxy SSRF / Firewall Bypass",
+      "affected_component": "SOCKS Proxy",
+      "affected_ports": [
+        1080
+      ],
+      "version_type": "routeros",
+      "affected_version": "<= 6.44.3",
+      "severity_level": "High",
+      "vulnerability_type": "SSRF / Firewall Bypass",
+      "cvss": 7.5,
+      "description": "RouterOS mengizinkan proxy SOCKS memproses permintaan TCP dan UDP dari WAN meskipun firewall dikonfigurasi menolaknya, memungkinkan penyerang memindai jaringan internal atau memicu DoS via perangkat lain.",
+      "mitigation_hint": "Upgrade ke RouterOS >= 6.44.4. Nonaktifkan SOCKS proxy jika tidak digunakan.",
+      "reference": "https://nvd.nist.gov/vuln/detail/CVE-2019-3924"
+    },
+    {
+      "cve_id": "CVE-2018-14847",
+      "title": "Winbox Directory Traversal (Credential Disclosure)",
+      "affected_component": "Winbox service",
+      "affected_ports": [
+        8291
+      ],
+      "version_type": "routeros",
+      "affected_version": "<= 6.42",
+      "severity_level": "Critical",
+      "vulnerability_type": "Directory Traversal (Credential Disclosure)",
+      "cvss": 9.1,
+      "description": "Kerentanan directory traversal pada Winbox yang memungkinkan penyerang tanpa autentikasi membaca berkas arbitrer, termasuk basis data pengguna, sehingga kredensial admin dapat diambil (dasar dari kampanye malware Slingshot/VPNFilter).",
+      "mitigation_hint": "Upgrade ke RouterOS >= 6.42.1 (atau versi terbaru). Ganti seluruh kredensial pengguna setelah upgrade.",
+      "reference": "https://www.kb.cert.org/vuls/id/878465"
+    }
+  ]
+}
