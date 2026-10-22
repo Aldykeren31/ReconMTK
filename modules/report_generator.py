@@ -79,8 +79,10 @@ def generate_report(scan_result: dict, output_path: str) -> str:
     story.append(HRFlowable(width="100%", color=colors.HexColor("#E1E5EE"), thickness=1))
     story.append(Spacer(1, 10))
 
+    tanggal_laporan = datetime.now().strftime("%d-%m-%Y")
     meta_rows = [
         ["Target", scan_result.get("target", "-")],
+        ["Tanggal", tanggal_laporan],
         ["Waktu Mulai", scan_result.get("started_at", "-")],
         ["Waktu Selesai", scan_result.get("finished_at", "-")],
         ["Versi RouterOS Terdeteksi", scan_result.get("detected_version") or "Tidak dapat dipastikan"],
@@ -269,5 +271,6 @@ def _default_table_style(highlight_col=None, highlight_value=None):
 
 def default_filename(target: str) -> str:
     safe_target = target.replace("/", "_").replace(":", "_")
-    ts = datetime.now().strftime("%d-%m-%Y_%H%M%S")
-    return f"report_{safe_target}_{ts}.pdf"
+    date_str = datetime.now().strftime("%d-%m-%Y")
+    return f"{date_str}_report_{safe_target}.pdf"
+

@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual environment
 venv/
+venv*/
 env/
 
 # Backup files
@@ -16,3 +17,4 @@ reports/*.pdf
 # OS files
 .DS_Store
 Thumbs.db
+.vscode/
