@@ -65,7 +65,7 @@ def api_download_report(job_id):
     path = job["report_path"]
     if not os.path.exists(path):
         abort(404)
-    return send_file(path, as_attachment=True, download_name=os.path.basename(path))
+    return send_file(path, as_attachment=True, download_name="Report_ReconMTK.pdf")
 
 
 @app.route("/api/cve-database", methods=["GET"])

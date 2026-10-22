@@ -250,6 +250,7 @@
 
       if (job.status === "done" && job.report_path) {
         downloadBtn.href = `/api/report/${jobId}`;
+        downloadBtn.setAttribute("download", "Report_ReconMTK.pdf");
         downloadBtn.style.display = "inline-flex";
       }
 
