@@ -17,6 +17,21 @@
   --radius: 10px;
 }
 
+/* ---------- Mode Terang (light theme) ---------- */
+body.light-mode {
+  --bg: #f0f3f8;
+  --panel: #ffffff;
+  --border: #d1d9e6;
+  --text: #1a2236;
+  --text-muted: #6b7793;
+  --accent: #1aaa9d;
+}
+
+/* Transisi halus saat berganti tema */
+*, *::before, *::after {
+  transition: background 0.25s ease, color 0.15s ease, border-color 0.2s ease;
+}
+
 * { box-sizing: border-box; }
 
 html, body {

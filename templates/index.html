@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReconMTK &mdash; Automated Reconnaissance Tool</title>
+<title>ReconMTK &mdash; Reconnaissance Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -21,7 +21,7 @@
       <div class="brand-dot"></div>
       <div>
         <div class="brand-name">ReconMTK</div>
-        <div class="brand-sub">Automated Reconnaissance Tool</div>
+        <div class="brand-sub">Reconnaissance Tool</div>
       </div>
     </div>
 
@@ -75,7 +75,10 @@
         <h1 class="page-title" id="page-title">Menunggu target dipindai</h1>
         <p class="page-subtitle" id="page-subtitle">Masukkan target pada panel kiri untuk memulai.</p>
       </div>
-      <a id="download-report" class="btn-secondary" href="#" style="display:none">Unduh Laporan PDF</a>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button id="theme-toggle" class="btn-secondary" title="Ganti tema">&#9790; Mode Terang</button>
+        <a id="download-report" class="btn-secondary" href="#" style="display:none">Unduh Laporan PDF</a>
+      </div>
     </header>
 
     <!-- Kartu status ringkas: target, status aktif/tidak, jumlah port terbuka -->

@@ -71,7 +71,7 @@ def generate_report(scan_result: dict, output_path: str) -> str:
     story = []
 
     # --- Halaman Judul ---
-    story.append(Paragraph("Laporan Teknis Automated Reconnaissance", styles["ReportTitle"]))
+    story.append(Paragraph("Laporan Teknis Reconnaissance", styles["ReportTitle"]))
     story.append(Paragraph(
         "Fase Intelligence Gathering (Footprinting &amp; Enumeration) &mdash; Metodologi PTES",
         styles["ReportSubtitle"],
@@ -84,7 +84,7 @@ def generate_report(scan_result: dict, output_path: str) -> str:
         ["Waktu Mulai", scan_result.get("started_at", "-")],
         ["Waktu Selesai", scan_result.get("finished_at", "-")],
         ["Versi RouterOS Terdeteksi", scan_result.get("detected_version") or "Tidak dapat dipastikan"],
-        ["Dibuat oleh", "Automated Reconnaissance Tool (Python) - Tugas Akhir"],
+        ["Dibuat oleh", "ReconMTK - Reconnaissance Tool (Python) - Tugas Akhir"],
     ]
     meta_table = Table(meta_rows, colWidths=[130, 340])
     meta_table.setStyle(TableStyle([
@@ -242,7 +242,7 @@ def generate_report(scan_result: dict, output_path: str) -> str:
     story.append(HRFlowable(width="100%", color=colors.HexColor("#E1E5EE"), thickness=1))
     story.append(Spacer(1, 6))
     story.append(Paragraph(
-        "Catatan: Laporan ini dihasilkan otomatis oleh Automated Reconnaissance Tool sebagai bagian "
+        "Catatan: Laporan ini dihasilkan otomatis oleh ReconMTK - Reconnaissance Tool sebagai bagian "
         "dari Tugas Akhir (fase Intelligence Gathering pada PTES). Basis data CVE bersifat kuratif dan "
         "perlu diverifikasi/diperbarui dari sumber resmi (mikrotik.com/supportsec, nvd.nist.gov) sebelum "
         "digunakan sebagai dasar audit resmi.",
@@ -269,5 +269,5 @@ def _default_table_style(highlight_col=None, highlight_value=None):
 
 def default_filename(target: str) -> str:
     safe_target = target.replace("/", "_").replace(":", "_")
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts = datetime.now().strftime("%d-%m-%Y_%H%M%S")
     return f"report_{safe_target}_{ts}.pdf"

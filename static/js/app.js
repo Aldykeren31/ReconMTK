@@ -42,6 +42,19 @@
   let pollTimer = null;
   let lastLogCount = 0;
 
+  // --- Toggle Tema Gelap / Terang ---
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  const savedTheme = localStorage.getItem("reconmtk-theme");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-mode");
+    themeToggleBtn.textContent = "☀ Mode Gelap";
+  }
+  themeToggleBtn.addEventListener("click", () => {
+    const isLight = document.body.classList.toggle("light-mode");
+    themeToggleBtn.textContent = isLight ? "☀ Mode Gelap" : "☾ Mode Terang";
+    localStorage.setItem("reconmtk-theme", isLight ? "light" : "dark");
+  });
+
   // --- Update daftar langkah di sidebar (checklist 1-5) ---
   function setStage(stageKey, status) {
     const currentIdx = STAGE_ORDER.indexOf(stageKey);

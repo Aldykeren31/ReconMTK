@@ -88,7 +88,7 @@ def _run_pipeline(job_id: str, target: str, active_ip: str = None, profile: str 
     stage_timings = {}
     _t0 = time.time()
     try:
-        _set(job_id, status="running", started_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        _set(job_id, status="running", started_at=datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
 
         # --- Tahap: Host Discovery ---
         _set(job_id, stage="Host Discovery (Cek Router Aktif)")
@@ -107,7 +107,7 @@ def _run_pipeline(job_id: str, target: str, active_ip: str = None, profile: str 
             _log(job_id, "Target Tidak Aktif -- proses dihentikan (sesuai flowchart).")
             stage_timings["total_s"] = round(time.time() - _t0, 2)
             _set(job_id, status="inactive", stage="Selesai (Target Tidak Aktif)",
-                 finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 finished_at=datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                  timings=stage_timings)
             return
 
@@ -198,7 +198,7 @@ def _run_pipeline(job_id: str, target: str, active_ip: str = None, profile: str 
         _t4 = time.time()
         _set(job_id, stage="Output: Menyusun Laporan Otomatis")
         job_snapshot = get_job(job_id)
-        job_snapshot["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        job_snapshot["finished_at"] = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         filename = report_generator.default_filename(target_ip)
         output_path = os.path.join(REPORTS_DIR, filename)
         report_generator.generate_report(job_snapshot, output_path)
@@ -217,7 +217,7 @@ def _run_pipeline(job_id: str, target: str, active_ip: str = None, profile: str 
         stage_timings["total_s"] = round(time.time() - _t0, 2)
         _log(job_id, f"Terjadi kesalahan: {exc}")
         _set(job_id, status="failed", error=str(exc), timings=stage_timings,
-             finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+             finished_at=datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
 
 
 def start_scan(target: str, profile: str = "core", include_ip_protocol: bool = False) -> str:
