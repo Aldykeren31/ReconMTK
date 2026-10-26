@@ -340,14 +340,18 @@
 
   // Ringkasan: total + jumlah per severity
   function renderDbSummary(stats) {
-    cveCountEl.textContent = `${stats.total} entri`;
-    const sev = stats.by_severity || {};
-    dbSummary.innerHTML = `
-      <div class="db-stat total"><strong>${stats.total}</strong>Total CVE</div>
-      <div class="db-stat"><strong>${sev.Critical || 0}</strong>Critical</div>
-      <div class="db-stat"><strong>${sev.High || 0}</strong>High</div>
-      <div class="db-stat"><strong>${sev.Medium || 0}</strong>Medium</div>
-      <div class="db-stat"><strong>${sev.Low || 0}</strong>Low</div>`;
+    if (cveCountEl && stats && typeof stats.total !== "undefined") {
+      cveCountEl.textContent = `${stats.total} entri`;
+    }
+    const sev = (stats && stats.by_severity) || {};
+    if (dbSummary) {
+      dbSummary.innerHTML = `
+        <div class="db-stat total"><strong>${stats.total ?? 0}</strong>Total CVE</div>
+        <div class="db-stat"><strong>${sev.Critical || 0}</strong>Critical</div>
+        <div class="db-stat"><strong>${sev.High || 0}</strong>High</div>
+        <div class="db-stat"><strong>${sev.Medium || 0}</strong>Medium</div>
+        <div class="db-stat"><strong>${sev.Low || 0}</strong>Low</div>`;
+    }
   }
 
   function renderDbTable(cves) {
@@ -370,23 +374,27 @@
 
   async function loadCveDb() {
     try {
-      const res = await fetch("/api/cve-database");
+      const res = await fetch("/api/cve-database", { cache: "no-store" });
       if (!res.ok) throw new Error();
       const db = await res.json();
       const cves = db.cves || [];
-      const stats = await (await fetch("/api/cve-database/stats")).json();
+      const statsRes = await fetch("/api/cve-database/stats", { cache: "no-store" });
+      const stats = await statsRes.json();
       renderDbSummary(stats);
       renderDbTable(cves);
     } catch (err) {
-      setDbMessage("Gagal memuat basis data CVE.", "err");
+      setDbMessage("Gagal memuat basis data CVE dari server.", "err");
     }
   }
 
   async function deleteCve(cveId, btn) {
-    if (!confirm(`Hapus ${cveId} dari basis data CVE?\n\nCVE ini tidak akan lagi dicocokkan pada scan berikutnya.`)) return;
+    if (!confirm(`Hapus ${cveId} dari basis data CVE?\n\nCVE ini tidak akan lagi dicocokkan pada scan berikutnya. Cadangan tersimpan di data/cve_database.json.bak.`)) return;
     btn.disabled = true;
     try {
-      const res = await fetch(`/api/cve-database/${encodeURIComponent(cveId)}`, { method: "DELETE" });
+      const res = await fetch(`/api/cve-database/${encodeURIComponent(cveId)}`, {
+        method: "DELETE",
+        cache: "no-store"
+      });
       const data = await res.json();
       if (!res.ok) {
         setDbMessage(data.error || "Gagal menghapus CVE.", "err");
@@ -401,14 +409,23 @@
     }
   }
 
-  dbTbody.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-cve-id]");
-    if (btn) deleteCve(btn.dataset.cveId, btn);
-  });
+  // Event hapus
+  if (dbTbody) {
+    dbTbody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-cve-id]");
+      if (btn) deleteCve(btn.dataset.cveId, btn);
+    });
+  }
 
   // Muat ulang daftar setiap kali tab "Basis Data CVE" dibuka
-  document.querySelector('.tab-btn[data-tab="db"]').addEventListener("click", () => {
-    if (dbMessage) { dbMessage.className = "field-hint"; dbMessage.innerHTML = DB_HINT; }
-    loadCveDb();
-  });
+  const dbTabBtn = document.querySelector('.tab-btn[data-tab="db"]');
+  if (dbTabBtn) {
+    dbTabBtn.addEventListener("click", () => {
+      if (dbMessage) { dbMessage.className = "field-hint"; dbMessage.innerHTML = DB_HINT; }
+      loadCveDb();
+    });
+  }
+
+  // Muat data awal saat halaman pertama kali dibuka agar hitungan sidebar selalu sinkron
+  loadCveDb();
 })();

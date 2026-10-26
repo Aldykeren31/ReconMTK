@@ -164,15 +164,14 @@ def main():
         print("Dibatalkan, tidak ada perubahan disimpan.")
         return
 
-    db["cves"].append(new_entry)
-    db["_meta"]["last_updated"] = __import__("datetime").date.today().isoformat()
-
-    with open(db_path, "w", encoding="utf-8") as f:
-        json.dump(db, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-
-    print(f"\nBerhasil! {cve_id} ditambahkan ke {db_path}")
-    print(f"Total entri CVE sekarang: {len(db['cves'])}")
+    from modules.cve_matcher import add_cve, get_stats
+    try:
+        saved_entry = add_cve(new_entry, db_path)
+        stats = get_stats()
+        print(f"\nBerhasil! {saved_entry['cve_id']} ditambahkan ke {db_path}")
+        print(f"Total entri CVE sekarang: {stats['total']}")
+    except Exception as e:
+        print(f"\nGagal menyimpan entri: {e}")
 
 
 if __name__ == "__main__":

@@ -112,6 +112,9 @@ def _in_range(version_tuple, low: str, high) -> bool:
 _DB_LOCK = threading.Lock()
 
 
+CVE_ID_RE = re.compile(r"^CVE-\d{4}-\d{4,}$", re.IGNORECASE)
+
+
 def load_database(path: str = DB_PATH) -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -120,7 +123,12 @@ def load_database(path: str = DB_PATH) -> dict:
 def save_database(db: dict, path: str = DB_PATH) -> None:
     """Simpan basis data secara atomik: tulis ke file sementara dulu, lalu
     ganti file asli. Scan yang sedang membaca database tidak akan pernah
-    menemui file yang setengah tertulis."""
+    menemui file yang setengah tertulis.
+    Selalu perbarui _meta.total_cves dan _meta.last_updated agar sinkron."""
+    meta = db.setdefault("_meta", {})
+    meta["total_cves"] = len(db.get("cves", []))
+    meta["last_updated"] = date.today().isoformat()
+
     tmp_path = path + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(db, f, indent=2, ensure_ascii=False)
@@ -146,21 +154,92 @@ def get_stats(db: dict = None) -> dict:
 
 
 def delete_cve(cve_id: str, path: str = DB_PATH):
-    """Hapus satu entri CVE berdasarkan cve_id.
+    """Hapus satu entri CVE berdasarkan cve_id (case-insensitive).
     Mengembalikan entri yang dihapus, atau None bila cve_id tidak ada.
     Sebelum menulis, salinan database lama disimpan ke `<path>.bak`
     (satu cadangan terakhir) sebagai pengaman bila ada salah hapus."""
+    clean_id = (cve_id or "").strip().upper()
     with _DB_LOCK:
         db = load_database(path)
         cves = db.get("cves", [])
-        removed = next((c for c in cves if c.get("cve_id") == cve_id), None)
+        removed = next((c for c in cves if (c.get("cve_id") or "").upper() == clean_id), None)
         if removed is None:
             return None
         shutil.copy2(path, path + ".bak")
-        db["cves"] = [c for c in cves if c.get("cve_id") != cve_id]
-        db.setdefault("_meta", {})["last_updated"] = date.today().isoformat()
+        db["cves"] = [c for c in cves if (c.get("cve_id") or "").upper() != clean_id]
         save_database(db, path)
         return removed
+
+
+def add_cve(entry: dict, path: str = DB_PATH) -> dict:
+    """Tambahkan satu entri CVE baru ke basis data.
+    Memvalidasi atribut wajib, mencegah cve_id duplikat, membuat cadangan .bak,
+    dan menyimpan secara atomik."""
+    clean_id = (entry.get("cve_id") or "").strip().upper()
+    if not CVE_ID_RE.match(clean_id):
+        raise ValueError(f"Format CVE ID '{clean_id}' tidak valid. Gunakan format CVE-YYYY-NNNN (mis. CVE-2024-1234).")
+
+    aff_ver = (entry.get("affected_version") or "").strip()
+    if not aff_ver:
+        raise ValueError("Rentang versi terdampak (affected_version) wajib diisi.")
+
+    # Validasi sintaks parsing rentang versi
+    ranges = parse_affected_version(aff_ver)
+    if not ranges:
+        raise ValueError("Format affected_version tidak valid. Contoh: '<= 6.49.10' atau '6.40 - 6.49.6'.")
+
+    # Parsing port (bisa list atau string koma)
+    raw_ports = entry.get("affected_ports", [])
+    if isinstance(raw_ports, str):
+        parsed_ports = [int(p.strip()) for p in raw_ports.split(",") if p.strip().isdigit()]
+    elif isinstance(raw_ports, list):
+        parsed_ports = [int(p) for p in raw_ports if str(p).isdigit()]
+    else:
+        parsed_ports = []
+
+    # Validasi CVSS score
+    raw_cvss = entry.get("cvss", 5.0)
+    try:
+        cvss_score = round(float(raw_cvss), 1)
+        if not (0.0 <= cvss_score <= 10.0):
+            cvss_score = 5.0
+    except (ValueError, TypeError):
+        cvss_score = 5.0
+
+    sev = (entry.get("severity_level") or "Medium").strip().title()
+    if sev not in ("Critical", "High", "Medium", "Low"):
+        sev = "Medium"
+
+    v_type = (entry.get("version_type") or "routeros").strip().lower()
+    if v_type not in ("routeros", "openssh"):
+        v_type = "routeros"
+
+    new_cve = {
+        "cve_id": clean_id,
+        "title": (entry.get("title") or f"Kerentanan pada MikroTik RouterOS ({clean_id})").strip(),
+        "affected_component": (entry.get("affected_component") or "MikroTik RouterOS").strip(),
+        "affected_ports": parsed_ports,
+        "version_type": v_type,
+        "affected_version": aff_ver,
+        "severity_level": sev,
+        "vulnerability_type": (entry.get("vulnerability_type") or "Security Vulnerability").strip(),
+        "cvss": cvss_score,
+        "description": (entry.get("description") or "").strip(),
+        "mitigation_hint": (entry.get("mitigation_hint") or "Perbarui firmware MikroTik RouterOS ke versi terbaru resmi (mikrotik.com/download).").strip(),
+        "reference": (entry.get("reference") or f"https://nvd.nist.gov/vuln/detail/{clean_id}").strip(),
+    }
+
+    with _DB_LOCK:
+        db = load_database(path)
+        cves = db.get("cves", [])
+        if any((c.get("cve_id") or "").upper() == clean_id for c in cves):
+            raise ValueError(f"CVE ID '{clean_id}' sudah ada di dalam database.")
+
+        shutil.copy2(path, path + ".bak")
+        cves.insert(0, new_cve)  # Letakkan di paling atas
+        db["cves"] = cves
+        save_database(db, path)
+        return new_cve
 
 
 def _banner_text_for_ports(ports, banners: dict) -> str:

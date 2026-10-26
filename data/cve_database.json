@@ -2,7 +2,7 @@
   "_meta": {
     "name": "MikroTik RouterOS CVE Reference Database",
     "note": "Kurasi manual dari sumber publik (NVD, VulnCheck, MikroTik Security Advisories) untuk keperluan skripsi. Perbarui berkala dari https://mikrotik.com/supportsec dan https://nvd.nist.gov sebelum dipakai pada laporan resmi. Skema atribut mengikuti Tabel 3.2 Perancangan Basis Data (BAB III).",
-    "last_updated": "2026-10-22",
+    "last_updated": "2026-10-27",
     "schema": {
       "cve_id": "String (PK) - Kode identifikasi resmi CVE",
       "title": "String - Nama umum/singkat kerentanan",

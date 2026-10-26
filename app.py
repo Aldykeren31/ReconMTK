@@ -68,6 +68,15 @@ def api_download_report(job_id):
     return send_file(path, as_attachment=True, download_name="Report_ReconMTK.pdf")
 
 
+@app.after_request
+def add_no_cache_headers(response):
+    if request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 @app.route("/api/cve-database", methods=["GET"])
 def api_cve_database():
     return jsonify(cve_matcher.load_database())
@@ -79,24 +88,30 @@ def api_cve_stats():
     return jsonify(cve_matcher.get_stats())
 
 
-CVE_ID_RE = re.compile(r"^CVE-\d{4}-\d{4,}$")
-
-
 @app.route("/api/cve-database/<cve_id>", methods=["DELETE"])
 def api_delete_cve(cve_id):
     """Hapus satu entri CVE dari database."""
-    if not CVE_ID_RE.match(cve_id):
-        return jsonify({"error": "Format cve_id tidak valid."}), 400
-    removed = cve_matcher.delete_cve(cve_id)
+    clean_id = (cve_id or "").strip().upper()
+    if not cve_matcher.CVE_ID_RE.match(clean_id):
+        return jsonify({"error": "Format cve_id tidak valid. Harus 'CVE-YYYY-NNNN'."}), 400
+    removed = cve_matcher.delete_cve(clean_id)
     if removed is None:
-        return jsonify({"error": f"{cve_id} tidak ditemukan di database."}), 404
-    return jsonify({"deleted": cve_id, "stats": cve_matcher.get_stats()})
+        return jsonify({"error": f"{clean_id} tidak ditemukan di database."}), 404
+    return jsonify({"deleted": clean_id, "stats": cve_matcher.get_stats()})
 
 
 if __name__ == "__main__":
+    import socket
+
+    port = int(os.environ.get("PORT", 5000))
+    # Deteksi jika port 5000 sedang dipakai (mis. AirPlay Receiver di macOS)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        if s.connect_ex(("127.0.0.1", port)) == 0 and "PORT" not in os.environ:
+            port = 5001
+
     print("=" * 60)
     print(" Automated Reconnaissance Tool - Web GUI")
-    print(" Buka browser: http://127.0.0.1:5000")
+    print(f" Buka browser: http://127.0.0.1:{port}")
     print(" Tekan CTRL+C untuk berhenti.")
     print("=" * 60)
-    app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
