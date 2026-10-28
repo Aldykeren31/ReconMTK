@@ -55,6 +55,7 @@ Cara pakai:
     python3 dummy_mikrotik_target.py --profile extended
     python3 dummy_mikrotik_target.py --profile extended --with-udp
     python3 dummy_mikrotik_target.py --version 7.15.3
+    python3 dummy_mikrotik_target.py --version 6.49.18 --tanpa-port 23 80 443 8291
     python3 dummy_mikrotik_target.py --bind 0.0.0.0
 
 Lalu di terminal lain / dashboard ReconMTK, scan ke 127.0.0.1
@@ -320,18 +321,28 @@ def main():
         help="Sertakan listener UDP pasif untuk port UDP referensi (hanya berlaku efektif jika --profile extended). "
              "Listener ini BUKAN implementasi protokol asli, lihat catatan di docstring file.",
     )
+    parser.add_argument(
+        "--tanpa-port",
+        nargs="*",
+        type=int,
+        default=[],
+        help="Port TCP/UDP yang TIDAK dibuka oleh dummy server (simulasi layanan dinonaktifkan di router, mis. 23 80 443 8291).",
+    )
     args = parser.parse_args()
 
+    tanpa_port = set(args.tanpa_port or [])
     if args.profile == "core":
-        active_ports = {p: v for p, v in TCP_HANDLERS.items() if v[2] == "core"}
+        active_ports = {p: v for p, v in TCP_HANDLERS.items() if v[2] == "core" and p not in tanpa_port}
     else:
-        active_ports = dict(TCP_HANDLERS)
+        active_ports = {p: v for p, v in TCP_HANDLERS.items() if p not in tanpa_port}
 
     print("=" * 60)
     print(" Dummy MikroTik Target Server")
     print(f" Bind address : {args.bind}")
     print(f" Versi palsu  : RouterOS {args.version}")
     print(f" Profil port  : {args.profile} ({len(active_ports)} port TCP)")
+    if tanpa_port:
+        print(f" Port dimatikan: {sorted(tanpa_port)}")
     if args.profile == "extended" and args.with_udp:
         print(f" UDP pasif    : aktif ({len(UDP_SERVICES)} port)")
     elif args.with_udp and args.profile != "extended":
@@ -347,9 +358,10 @@ def main():
 
     if args.profile == "extended" and args.with_udp:
         for port, name in sorted(UDP_SERVICES.items()):
-            t = threading.Thread(target=serve_udp, args=(args.bind, port, name), daemon=True)
-            t.start()
-            threads.append(t)
+            if port not in tanpa_port:
+                t = threading.Thread(target=serve_udp, args=(args.bind, port, name), daemon=True)
+                t.start()
+                threads.append(t)
 
     try:
         while True:

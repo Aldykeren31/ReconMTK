@@ -6,7 +6,7 @@ Simpan di folder scripts/ project ReconMTK, lalu jalankan dari root project:
 
     sudo python3 scripts/uji_banyak_versi.py
     sudo python3 scripts/uji_banyak_versi.py --versi 6.40 6.45.9 6.48.6 6.49.18 7.15.3
-    sudo python3 scripts/uji_banyak_versi.py --tanpa-port 23 80 443     # kasus "layanan versi dimatikan"
+    sudo python3 scripts/uji_banyak_versi.py --tanpa-port 23 80 443 8291 # kasus "layanan versi & manajemen dimatikan"
 
 (sudo diperlukan karena dummy membuka port < 1024: 21, 22, 23, 80, 443.)
 
@@ -71,7 +71,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--versi", nargs="+", default=DEFAULT_VERSIONS)
     ap.add_argument("--tanpa-port", nargs="*", type=int, default=[],
-                    help="port yang dikeluarkan dari pemindaian (mis. 23 80 443 untuk kasus layanan versi dimatikan)")
+                    help="port yang dikeluarkan dari pemindaian (mis. 23 80 443 8291 untuk kasus layanan versi & manajemen dimatikan)")
     a = ap.parse_args()
 
     baris = [uji_satu(v, set(a.tanpa_port)) for v in a.versi]
